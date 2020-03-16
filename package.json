@@ -1,0 +1,27 @@
+{
+  "name": "n",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "arg": "4.1.3",
+    "glob": "7.1.6",
+    "jsdom": "16.2.1",
+    "prettier": "^1.19.1"
+  },
+  "devDependencies": {
+    "@types/glob": "7.1.1",
+    "@types/jest": "25.1.4",
+    "@types/jsdom": "16.1.0",
+    "@types/node": "13.9.1",
+    "@types/prettier": "^1.19.0",
+    "jest": "25.1.0",
+    "ts-jest": "25.2.1",
+    "ts-node": "8.6.2",
+    "typescript": "3.8.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "n": "ts-node src/index.ts"
+  }
+}
