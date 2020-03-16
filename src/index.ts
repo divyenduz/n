@@ -26,6 +26,12 @@ async function main() {
     {
       type: 'delete',
       operation: {
+        selectorAll: '.page-header-icon',
+      },
+    },
+    {
+      type: 'delete',
+      operation: {
         selectorAll: 'style',
       },
     },
@@ -44,6 +50,17 @@ async function main() {
           href: '/style.css',
           rel: 'stylesheet',
           type: 'text/css',
+        },
+      },
+    },
+    {
+      type: 'create',
+      operation: {
+        element: 'a',
+        siblingOf: 'h1',
+        args: {
+          href: '/',
+          innerHTML: 'Home',
         },
       },
     },

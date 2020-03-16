@@ -3,7 +3,8 @@ import prettier from 'prettier'
 
 interface NotionRuleCreate {
   element: string
-  siblingOf: string
+  siblingOf?: string
+  childOf?: string
   args: { [key: string]: string | null }
 }
 
@@ -35,12 +36,25 @@ export class Notion {
     const operation: NotionRuleCreate = rule.operation as NotionRuleCreate
     const element = dom.window.document.createElement(operation.element)
     Object.entries(operation.args).forEach(([key, value]) => {
-      element.setAttribute(key, value)
+      if (key === 'innerHTML') {
+        element.innerHTML = value
+      } else {
+        element.setAttribute(key, value)
+      }
     })
-    const siblineElement = dom.window.document.querySelector(
-      operation.siblingOf,
-    )
-    siblineElement.parentNode.insertBefore(element, siblineElement.nextSibling)
+    if (operation.siblingOf) {
+      const siblineElement = dom.window.document.querySelector(
+        operation.siblingOf,
+      )
+      siblineElement.parentNode.insertBefore(
+        element,
+        siblineElement.nextSibling,
+      )
+    }
+    if (operation.childOf) {
+      const parentElement = dom.window.document.querySelector(operation.childOf)
+      parentElement.insertBefore(element, parentElement.firstChild)
+    }
     return dom.serialize()
   }
 
