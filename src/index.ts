@@ -47,6 +47,34 @@ async function main() {
         },
       },
     },
+    {
+      type: 'update',
+      operation: {
+        element: 'title',
+        args: {
+          innerHTML: value => {
+            if (value.includes('Formal Computer Science')) {
+              return 'LikeCSDegree.com'
+            }
+            return value
+          },
+        },
+      },
+    },
+    {
+      type: 'update',
+      operation: {
+        element: 'h1',
+        args: {
+          innerHTML: value => {
+            if (value.includes('Formal Computer Science')) {
+              return 'LikeCSDegree.com'
+            }
+            return value
+          },
+        },
+      },
+    },
   ]
   const notion = new Notion(rules)
   files.forEach(filePath => {

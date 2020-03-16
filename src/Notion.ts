@@ -1,19 +1,27 @@
 import { JSDOM } from 'jsdom'
 import prettier from 'prettier'
 
+interface NotionRuleCreate {
+  element: string
+  siblingOf: string
+  args: { [key: string]: string | null }
+}
+
+// type IdentifyFn = { <T>(arg: T): T }
+type IdentifyFn = { (arg: string): string }
+
+interface NotionRuleUpdate {
+  element: string
+  args: { [key: string]: string | null | IdentifyFn }
+}
+
 interface NotionRuleDelete {
   selectorAll: string
 }
 
-interface NotionRuleCreate {
-  element: string
-  siblingOf: string
-  args: { [key: string]: string }
-}
-
 export interface NotionRule {
-  type: 'create' | 'read' | 'update' | 'delete'
-  operation: NotionRuleCreate | NotionRuleDelete
+  type: 'create' | 'update' | 'delete'
+  operation: NotionRuleCreate | NotionRuleUpdate | NotionRuleDelete
 }
 
 export class Notion {
@@ -36,6 +44,29 @@ export class Notion {
     return dom.serialize()
   }
 
+  _applyUpdate(rule: NotionRule, dom: JSDOM) {
+    const operation: NotionRuleUpdate = rule.operation as NotionRuleUpdate
+    const element = dom.window.document.querySelector(operation.element)
+    Object.entries(operation.args).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        if (key === 'innerHTML') {
+          element.innerHTML = value
+        } else {
+          element.setAttribute(key, value)
+        }
+      } else if (typeof value === 'function') {
+        if (key === 'innerHTML') {
+          element.innerHTML = value(element[key])
+        } else {
+          element.setAttribute(key, value(element[key]))
+        }
+      } else {
+        throw new Error(`typeof value is unknown`)
+      }
+    })
+    return dom.serialize()
+  }
+
   _applyDelete(rule: NotionRule, dom: JSDOM) {
     const operation: NotionRuleDelete = rule.operation as NotionRuleDelete
     const elements = dom.window.document.querySelectorAll(operation.selectorAll)
@@ -54,6 +85,9 @@ export class Notion {
         case 'create':
           modifyHTML = this._applyCreate(rule, dom)
           break
+        case 'update':
+          modifyHTML = this._applyUpdate(rule, dom)
+          break
         case 'delete':
           modifyHTML = this._applyDelete(rule, dom)
           break
@@ -62,51 +96,9 @@ export class Notion {
           break
       }
     })
-    // const styleElements = Array.from(
-    //   dom.window.document.querySelectorAll('style'),
-    // )
-    // styleElements.forEach(styleElement => {
-    //   styleElement.innerHTML = ''
-    //   const linkToCSS = dom.window.document.createElement('link')
-    //   linkToCSS.setAttribute('href', 'style.css')
-    //   linkToCSS.setAttribute('rel', 'stylesheet')
-    //   linkToCSS.setAttribute('type', 'text/css')
-    //   styleElement.parentNode.insertBefore(linkToCSS, styleElement.nextSibling)
-    //   styleElement.parentNode.removeChild(styleElement)
-    // })
-    // styleElements //?
 
     return prettier.format(modifyHTML, {
       parser: 'html',
     })
   }
 }
-
-import fs from 'fs'
-import path from 'path'
-const html = fs.readFileSync(
-  path.join(__dirname, './__tests__/fixture.html'),
-  'utf8',
-)
-const rules: NotionRule[] = [
-  {
-    type: 'create',
-    operation: {
-      element: 'link',
-      siblingOf: 'title',
-      args: {
-        href: 'style.css',
-        rel: 'stylesheet',
-        type: 'text/css',
-      },
-    },
-  },
-  {
-    type: 'delete',
-    operation: {
-      selectorAll: 'style',
-    },
-  },
-]
-const notion = new Notion(rules)
-notion.modifyHTML(html) //?

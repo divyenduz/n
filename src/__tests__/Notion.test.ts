@@ -31,6 +31,17 @@ describe('Test Notion', () => {
           },
         },
       },
+      {
+        type: 'update',
+        operation: {
+          element: 'title',
+          args: {
+            innerHTML: value => {
+              return `ZEBRA ` + value
+            },
+          },
+        },
+      },
     ]
     const notion = new Notion(rules)
     expect(notion.modifyHTML(html)).toMatchSnapshot()
